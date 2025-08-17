@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "504282890408",
+    "firebase_url": "https://trabalho-conclusao-de-cu-fbce7-default-rtdb.firebaseio.com",
+    "project_id": "trabalho-conclusao-de-cu-fbce7",
+    "storage_bucket": "trabalho-conclusao-de-cu-fbce7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:504282890408:android:a8bbe0a22522c4e9f5c29d",
+        "android_client_info": {
+          "package_name": "com.lucca03.tcc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9mvvsJA7szeBQkBFWoVNRdBf-_O3tNW0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
