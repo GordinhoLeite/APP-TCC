@@ -1,44 +1,75 @@
-import React, { useEffect, useState } from 'react';
-import { SplashScreen, Slot, useRouter, Stack } from 'expo-router';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../lib/firebase/config';
+// Caminho do arquivo: app/_layout.tsx
 
-// Impede que a tela de splash seja escondida até que o fluxo de autenticação seja concluído
+import React, { useState, useEffect, useCallback } from 'react';
+import { View } from 'react-native';
+import { useFonts, DMSans_400Regular } from '@expo-google-fonts/dm-sans';
+import { DMSerifDisplay_400Regular } from '@expo-google-fonts/dm-serif-display';
+import * as SplashScreen from 'expo-splash-screen';
+import { onAuthStateChanged } from 'firebase/auth';
+// CORREÇÃO 1: O caminho para seu arquivo Firebase foi ajustado
+import { auth } from '../lib/firebase/config';
+import { Stack, useRouter } from 'expo-router';
+
+// Impede que a splash screen se esconda automaticamente
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    DMSans_400Regular,
+    DMSerifDisplay_400Regular,
+  });
+
+  // CORREÇÃO 2: Adicionamos o tipo <boolean | undefined> para o TypeScript
+  const [userIsAuthenticated, setUserIsAuthenticated] = useState<boolean | undefined>(undefined);
   const router = useRouter();
-  const [isAuthReady, setAuthReady] = useState(false);
 
+  // Efeito para verificar a autenticação e redirecionar o usuário
   useEffect(() => {
-    // Escuta as mudanças no estado de autenticação do usuário
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // Quando o estado de autenticação é carregado, esconde a tela de splash
-      SplashScreen.hideAsync();
-
-      if (user) {
-        // Se o usuário está logado, redireciona para a tela inicial
-        router.replace('/(tabs)/(auth)/Tela_Inicial/home');
-      } else {
-        // Se o usuário não está logado, redireciona para a tela de login
-        router.replace('/(tabs)/Tela_Login/login');
-      }
-      setAuthReady(true);
+      setUserIsAuthenticated(!!user);
     });
-
-    return () => unsubscribe(); // Limpa a assinatura quando o componente é desmontado
+    return () => unsubscribe();
   }, []);
 
-  if (!isAuthReady) {
-    // Retorna null ou uma tela de carregamento enquanto o estado de autenticação não é carregado
-    return null;
+  // CORREÇÃO 3, 4 e 5: Lógica de redirecionamento ajustada para suas rotas
+  useEffect(() => {
+    if (userIsAuthenticated === undefined) {
+      // Ainda estamos verificando, não faça nada
+      return;
+    }
+
+    // Se o usuário estiver logado, manda para a tela inicial do app
+    if (userIsAuthenticated) {
+      router.replace('/(tabs)/(auth)/Tela_Inicial/home');
+    }
+    // Se o usuário NÃO estiver logado, manda para a tela de login
+    else {
+      router.replace('/(tabs)/Tela_Login/login');
+    }
+  }, [userIsAuthenticated]);
+
+
+  // Função para esconder a splash screen quando tudo estiver pronto
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded && userIsAuthenticated !== undefined) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, userIsAuthenticated]);
+
+  // Se as fontes não carregaram ou a autenticação não foi verificada, não renderiza nada
+  if (!fontsLoaded || userIsAuthenticated === undefined) {
+    return null; // A splash screen continuará visível
   }
 
-  // A partir daqui, o Expo Router lida com o roteamento
-  return <Slot />;
-}
-
-// O componente de tela precisa ser exportado separadamente
-export function LoginLayout() {
-  return <Stack />;
+  return (
+    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        {/*
+          Seu Stack principal que define os grupos de rotas.
+          Verifique se os nomes "(tabs)" correspondem às suas pastas.
+        */}
+        <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+        </Stack>
+    </View>
+  );
 }

@@ -29,8 +29,9 @@ export default {
       favicon: "./assets/images/favicon.png"
     },
     plugins: [
+      
       "expo-router",
-       
+      '@react-native-google-signin/google-signin',
       [
         "expo-splash-screen",
         {
@@ -58,9 +59,9 @@ export default {
         origin: false
       },
       eas: {
-        projectId: "c22a2263-bf87-49f3-b914-3a8b0dc1b7cc"
-      }
+      projectId: "dedc3356-54d9-4873-96f5-0e77cfc12b02"
+    }
     },
-    owner: "lilblanc"
+   
   }
 };
