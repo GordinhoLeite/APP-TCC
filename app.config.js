@@ -1,10 +1,10 @@
 export default {
   expo: {
-    name: "H2OControl",
-    slug: "h2ocontrol",
+    name: "TCC Lucca",
+    slug: "TCC Lucca",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/logo.png",
+    icon: "./assets/images/Imagem de inicializacao quadrada.png",
     scheme: "myapp",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
@@ -35,7 +35,7 @@ export default {
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/splash-icon.png",
+          image: "./assets/images/Imagem de inicialização app TCC.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff"

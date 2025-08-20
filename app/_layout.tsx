@@ -1,75 +1,40 @@
-// Caminho do arquivo: app/_layout.tsx
+// Caminho: app/_layout.tsx
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { View } from 'react-native';
-import { useFonts, DMSans_400Regular } from '@expo-google-fonts/dm-sans';
-import { DMSerifDisplay_400Regular } from '@expo-google-fonts/dm-serif-display';
+import React, { useEffect } from 'react';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { onAuthStateChanged } from 'firebase/auth';
-// CORREÇÃO 1: O caminho para seu arquivo Firebase foi ajustado
-import { auth } from '../lib/firebase/config';
-import { Stack, useRouter } from 'expo-router';
+import { useFonts } from 'expo-font';
+// Verifique se você tem as fontes Poppins instaladas, se não, rode no terminal:
+// npx expo install @expo-google-fonts/poppins
+import { Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 
-// Impede que a splash screen se esconda automaticamente
+// Mantém a tela de splash visível
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    DMSans_400Regular,
-    DMSerifDisplay_400Regular,
+  // Carrega as fontes necessárias para o app
+  const [fontsLoaded, fontError] = useFonts({
+    // Adaptei para as fontes que vi no seu código de login
+    Poppins_Regular: Poppins_400Regular,
+    Poppins_Bold: Poppins_700Bold,
   });
 
-  // CORREÇÃO 2: Adicionamos o tipo <boolean | undefined> para o TypeScript
-  const [userIsAuthenticated, setUserIsAuthenticated] = useState<boolean | undefined>(undefined);
-  const router = useRouter();
-
-  // Efeito para verificar a autenticação e redirecionar o usuário
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUserIsAuthenticated(!!user);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // CORREÇÃO 3, 4 e 5: Lógica de redirecionamento ajustada para suas rotas
-  useEffect(() => {
-    if (userIsAuthenticated === undefined) {
-      // Ainda estamos verificando, não faça nada
-      return;
+    // Esconde a splash screen assim que as fontes carregarem (ou der erro)
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync();
     }
+  }, [fontsLoaded, fontError]);
 
-    // Se o usuário estiver logado, manda para a tela inicial do app
-    if (userIsAuthenticated) {
-      router.replace('/(tabs)/(auth)/Tela_Inicial/home');
-    }
-    // Se o usuário NÃO estiver logado, manda para a tela de login
-    else {
-      router.replace('/(tabs)/Tela_Login/login');
-    }
-  }, [userIsAuthenticated]);
-
-
-  // Função para esconder a splash screen quando tudo estiver pronto
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded && userIsAuthenticated !== undefined) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, userIsAuthenticated]);
-
-  // Se as fontes não carregaram ou a autenticação não foi verificada, não renderiza nada
-  if (!fontsLoaded || userIsAuthenticated === undefined) {
-    return null; // A splash screen continuará visível
+  // Se as fontes ainda não carregaram, não mostra nada para manter o splash
+  if (!fontsLoaded && !fontError) {
+    return null;
   }
 
+  // Renderiza a estrutura principal do app, sem o provedor de autenticação
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-        {/*
-          Seu Stack principal que define os grupos de rotas.
-          Verifique se os nomes "(tabs)" correspondem às suas pastas.
-        */}
-        <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
-        </Stack>
-    </View>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+    </Stack>
   );
 }
