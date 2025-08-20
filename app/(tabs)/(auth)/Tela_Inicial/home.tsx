@@ -1,28 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet, Dimensions, ActivityIndicator } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { View, Text, Image, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from "@expo-google-fonts/poppins";
 import { collection, doc, getDoc, onSnapshot, query, where, getDocs } from "firebase/firestore";
 import { firestore, auth } from "@/lib/firebase/config";
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
-const { width } = Dimensions.get("window");
-
-// --- MUDANÇA 1: Renomeando os tipos e variáveis ---
-type Graneleiro = {
-  id: string;
-  sensorID: string;
-  nome: string;
-  // Adicione aqui os campos específicos do graneleiro se forem diferentes
-};
+// Tipos de dados
+type Graneleiro = { id: string; sensorID: string; nome: string; };
+type SensorData = { temperatura: number; umidade: number; nivel: number; };
 
 export default function HomeScreen() {
   const [nomeUsuario, setNomeUsuario] = useState("");
-  // Renomeado de 'aquario' para 'graneleiro'
   const [graneleiro, setGraneleiro] = useState<Graneleiro | null>(null);
+  const [sensorData, setSensorData] = useState<SensorData | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const router = useRouter();
 
   let [fontsLoaded] = useFonts({
     Poppins_Regular: Poppins_400Regular,
@@ -30,182 +21,121 @@ export default function HomeScreen() {
   });
 
   useEffect(() => {
-    const carregarDados = async () => {
-      const user = auth.currentUser;
-      if (user) {
-        const usuarioRef = doc(firestore, "usuarios", user.uid);
-        const usuarioSnap = await getDoc(usuarioRef);
+    // A lógica para carregar dados permanece a mesma
+    const user = auth.currentUser;
+    if (!user) { setLoading(false); return; }
 
-        if (usuarioSnap.exists()) {
-          setNomeUsuario(usuarioSnap.data().nome || "");
+    const carregarDadosIniciais = async () => {
+      const usuarioRef = doc(firestore, "usuarios", user.uid);
+      const usuarioSnap = await getDoc(usuarioRef);
+      if (usuarioSnap.exists()) { setNomeUsuario(usuarioSnap.data().nome || ""); }
 
-          // --- MUDANÇA 2: Buscando na coleção "graneleiros" ---
-          const graneleirosQuery = query(
-            collection(firestore, "graneleiros"), // Alterado de "aquarios"
-            where("usuarioID", "==", user.uid)
-          );
-          const querySnapshot = await getDocs(graneleirosQuery);
+      const graneleirosQuery = query(collection(firestore, "graneleiros"), where("usuarioID", "==", user.uid));
+      const querySnapshot = await getDocs(graneleirosQuery);
 
-          if (!querySnapshot.empty) {
-            const graneleiroData = querySnapshot.docs[0].data();
-            const graneleiroID = querySnapshot.docs[0].id;
-
-            const novoGraneleiro: Graneleiro = {
-              id: graneleiroID,
-              sensorID: graneleiroData.sensorID,
-              nome: graneleiroData.nome,
-            };
-            setGraneleiro(novoGraneleiro);
-            
-            // A lógica do sensor continua a mesma, se aplicável
-            // ...
-          } else {
-            setGraneleiro(null);
-          }
-        }
+      if (!querySnapshot.empty) {
+        const data = querySnapshot.docs[0].data();
+        const id = querySnapshot.docs[0].id;
+        const novoGraneleiro: Graneleiro = { id, sensorID: data.sensorID, nome: data.nome };
+        setGraneleiro(novoGraneleiro);
+        return novoGraneleiro;
+      } else {
+        setGraneleiro(null);
+        setLoading(false);
+        return null;
       }
-      setLoading(false);
     };
 
-    carregarDados();
+    carregarDadosIniciais().then(graneleiroAtual => {
+      if (graneleiroAtual?.sensorID) {
+        const sensorRef = doc(firestore, "sensores", graneleiroAtual.sensorID);
+        const unsubscribe = onSnapshot(sensorRef, (docSnap) => {
+          if (docSnap.exists()) { setSensorData(docSnap.data() as SensorData); }
+          setLoading(false);
+        });
+        return () => unsubscribe();
+      }
+    });
   }, []);
 
   if (!fontsLoaded || loading) {
-    return (
-      <View style={[styles.container, { justifyContent: "center", backgroundColor: '#F8F9FA' }]}>
-        <ActivityIndicator size="large" color="#28FD40" />
-      </View>
-    );
+    return <View style={[styles.container, { justifyContent: "center" }]}><ActivityIndicator size="large" color="#4CAF50" /></View>;
   }
 
-  // --- MUDANÇA 3: Renderização condicional para a nova tela ---
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.welcomeText}>Bem vindo, {nomeUsuario}</Text>
-      </View>
-
-      {!graneleiro ? (
-        <View style={styles.content}>
-          {/* Você pode criar uma imagem específica para "sem graneleiro" */}
-          <Image source={require("@/assets/images/imagem da tela inicial-sem aquario.png")} style={styles.image} />
-          
-          <Text style={styles.title}>
-            <Text style={styles.boldText}>Ops.</Text>{" "}
-            {/* Texto e cor de destaque atualizados */}
-            <Text style={styles.highlightText}>Não há nenhum graneleiro cadastrado</Text>
-          </Text>
-          <Text style={styles.description}>Comece adicionando o graneleiro que deseja monitorar</Text>
-
-          <TouchableOpacity
-            style={styles.button}
-            // Mude a rota se o scanner for diferente
-            onPress={() => router.push("/(tabs)/(auth)/Tela_Monitoramento/ScannerQRCode")}
-          >
-            {/* Novo gradiente do botão */}
-            <LinearGradient
-              colors={["#28FD40", "#C7D61E"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.gradient}
-            >
-              <Text style={styles.buttonText}>Adicionar graneleiro</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.content}>
-          {/* Aqui virá o código da tela QUANDO HÁ um graneleiro cadastrado */}
-          <Text style={styles.title}>Dados do Graneleiro: {graneleiro.nome}</Text>
-        </View>
-      )}
-
-      {/* A barra de navegação inferior permanece a mesma */}
-      <View style={styles.bottomNav}>
-        {/* ... seu código da TabBar ... */}
-      </View>
+      <Text style={styles.welcomeText}>Bem vindo, {nomeUsuario}</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {!graneleiro ? (
+          <View style={styles.emptyContainer}>
+            <Image source={require("@/assets/images/imagem da tela inicial-sem aquario.png")} style={styles.emptyImage} />
+            <Text style={styles.emptyTitle}><Text style={styles.boldText}>Ops.</Text> Não há nenhum graneleiro cadastrado</Text>
+          </View>
+        ) : (
+          <View style={styles.dashboardContainer}>
+            <View style={styles.headerCard}>
+              <Image source={require("@/assets/images/graneleiro-icon.png")} style={styles.headerIcon} />
+              <Text style={styles.headerTitle}>{graneleiro.nome}</Text>
+              <Text style={styles.headerMenu}>...</Text>
+            </View>
+            <View style={styles.mainCard}>
+              <View style={styles.dataRow}>
+                <View style={styles.dataCircle}>
+                  <AnimatedCircularProgress
+                    size={120} width={8} fill={sensorData?.temperatura ?? 0} tintColor="#28FD40" backgroundColor="#E8F5E9" rotation={-90} lineCap="round"
+                    dashedBackground={{ width: 2, gap: 5 }} renderCap={({ center }) => <View style={[styles.progressCap, { transform: [{ translateX: center.x }, { translateY: center.y }] }]} />}
+                  >
+                    {(fill: number) => <Text style={styles.dataValue}>{Math.round(fill)}°C</Text>}
+                  </AnimatedCircularProgress>
+                  <Text style={styles.dataLabel}>TEMPERATURA</Text>
+                </View>
+                <View style={styles.dataCircle}>
+                  <AnimatedCircularProgress
+                    size={120} width={8} fill={sensorData?.nivel ?? 0} tintColor="#28FD40" backgroundColor="#E8F5E9" rotation={-90} lineCap="round"
+                    dashedBackground={{ width: 2, gap: 5 }} renderCap={({ center }) => <View style={[styles.progressCap, { transform: [{ translateX: center.x }, { translateY: center.y }] }]} />}
+                  >
+                    {(fill: number) => <Text style={styles.dataValue}>{Math.round(fill)}%</Text>}
+                  </AnimatedCircularProgress>
+                  <Text style={styles.dataLabel}>NÍVEL DO TANQUE</Text>
+                </View>
+              </View>
+              <View style={[styles.dataRow, { marginTop: 20 }]}>
+                 <View style={styles.dataCircle}>
+                  <AnimatedCircularProgress
+                    size={120} width={8} fill={sensorData?.umidade ?? 0} tintColor="#28FD40" backgroundColor="#E8F5E9" rotation={-90} lineCap="round"
+                    dashedBackground={{ width: 2, gap: 5 }} renderCap={({ center }) => <View style={[styles.progressCap, { transform: [{ translateX: center.x }, { translateY: center.y }] }]} />}
+                  >
+                    {(fill: number) => <Text style={styles.dataValue}>{Math.round(fill)}%</Text>}
+                  </AnimatedCircularProgress>
+                  <Text style={styles.dataLabel}>UMIDADE</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 }
 
-// --- MUDANÇA 4: Estilos atualizados para o novo design ---
+// Estilos atualizados (sem a TabBar e o FAB)
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8F9FA', // Fundo claro como no protótipo
-  },
-  header: {
-    width: "100%",
-    paddingTop: 60, // Espaçamento superior
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    alignItems: 'center', // Centraliza o texto de boas-vindas
-  },
-  welcomeText: {
-    fontSize: 22,
-    fontFamily: "Poppins_Bold",
-    color: "#393939", // Cor escura para contraste
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-    justifyContent: 'center', // Centraliza o conteúdo verticalmente
-    alignItems: "center",
-  },
-  image: {
-    width: 150, // Ajuste o tamanho conforme necessário
-    height: 150,
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 20,
-    fontFamily: "Poppins_Regular",
-    textAlign: "center",
-    color: "#393939",
-    marginBottom: 10,
-  },
-  boldText: {
-    fontFamily: "Poppins_Bold",
-  },
-  highlightText: {
-    color: "#28FD40", // Cor de destaque principal do novo tema
-    fontFamily: "Poppins_Bold",
-  },
-  description: {
-    fontSize: 16,
-    fontFamily: "Poppins_Regular",
-    textAlign: "center",
-    color: "#6c757d", // Um cinza para o texto secundário
-    marginBottom: 30,
-  },
-  button: {
-    width: "90%",
-    borderRadius: 50, // Totalmente arredondado
-    overflow: "hidden",
-    elevation: 5, // Sombra para Android
-    shadowColor: '#000', // Sombra para iOS
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  gradient: {
-    paddingVertical: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonText: {
-    color: "#393939", // Texto escuro para melhor leitura no botão claro
-    fontSize: 18,
-    fontFamily: "Poppins_Bold",
-  },
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "100%",
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderColor: '#eee',
-    // Estilos da sua barra de navegação...
-  },
+  container: { flex: 1, backgroundColor: '#000000' },
+  welcomeText: { fontSize: 22, fontFamily: "Poppins_Bold", color: "#FFFFFF", textAlign: 'center', paddingTop: 60, paddingBottom: 20 },
+  scrollContent: { flexGrow: 1, paddingBottom: 120 },
+  dashboardContainer: { paddingHorizontal: 20 },
+  headerCard: { backgroundColor: '#4CAF50', borderRadius: 25, padding: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  headerIcon: { width: 40, height: 40, resizeMode: 'contain' },
+  headerTitle: { fontSize: 20, fontFamily: 'Poppins_Bold', color: '#FFFFFF' },
+  headerMenu: { fontSize: 24, fontFamily: 'Poppins_Bold', color: '#FFFFFF', transform: [{ rotate: '90deg' }] },
+  mainCard: { backgroundColor: '#FFFFFF', borderRadius: 25, padding: 25, marginTop: -20, paddingTop: 40, alignItems: 'center', zIndex: -1 },
+  dataRow: { flexDirection: 'row', justifyContent: 'space-around', width: '100%' },
+  dataCircle: { alignItems: 'center' },
+  dataValue: { fontSize: 28, fontFamily: 'Poppins_Bold', color: '#393939' },
+  dataLabel: { fontSize: 12, fontFamily: 'Poppins_Regular', color: '#6c757d', marginTop: 10, textTransform: 'uppercase' },
+  progressCap: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#28FD40', position: 'absolute', borderWidth: 2, borderColor: '#FFFFFF' },
+  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
+  emptyImage: { width: 150, height: 150, marginBottom: 40 },
+  emptyTitle: { fontSize: 20, fontFamily: "Poppins_Regular", textAlign: "center", color: "#FFFFFF" },
+  boldText: { fontFamily: "Poppins_Bold" },
 });
