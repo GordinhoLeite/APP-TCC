@@ -62,57 +62,15 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
 
 export default function TabsLayout() {
   return (
-    <Tabs
-      // Passamos nosso componente customizado para renderizar a barra
-      tabBar={(props) => <CustomTabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Tabs.Screen
-        name="(auth)/home"
-        options={{
-          tabBarLabel: 'Início',
-          tabBarIcon: ({ focused }) => (
-            <Image
-              source={focused ? require('@/assets/images/inicio-icone-ativado.png') : require('@/assets/images/inicio-icone-desativado.png')}
-              style={styles.tabIcon}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="(auth)/estatisticas"
-        options={{
-          tabBarLabel: 'Estatísticas',
-          tabBarIcon: ({ focused }) => (
-            <Image
-              source={focused ? require('@/assets/images/estatisticas-icone-ativado.png') : require('@/assets/images/estatisticas-icone-desativado.png')}
-              style={styles.tabIcon}
-            />
-          ),
-        }}
-      />
-       <Tabs.Screen
-        name="(auth)/perfil"
-        options={{
-          tabBarLabel: 'Perfil',
-          tabBarIcon: ({ focused }) => (
-            <Image
-              source={focused ? require('@/assets/images/perfil-icone-ativado.png') : require('@/assets/images/perfil-icone-desativado.png')}
-              style={styles.tabIcon}
-            />
-          ),
-        }}
-      />
-      
-      {/* Telas que não aparecem na barra de abas */}
-      <Tabs.Screen name="Tela_Login/login" options={{ href: null }} />
-      <Tabs.Screen name="Tela_Cadastro/cadastrar" options={{ href: null }} />
-      <Tabs.Screen name="Tela_Login/recuperar_senha" options={{ href: null }} />
-      <Tabs.Screen name="index" options={{ href: null }} />
-      <Tabs.Screen name="(auth)/_layout" options={{ href: null }} />
-    </Tabs>
+  <Tabs
+  screenOptions={{
+    headerShown: false, // (Provavelmente já está assim)
+    tabBarStyle: { display: 'none' }, // <--- ADICIONE ISSO AQUI PARA SUMIR O RODAPÉ
+    // ... outras configurações que já existiam
+  }}
+>
+  {/* ... resto do código das abas */}
+</Tabs>
   );
 }
 
