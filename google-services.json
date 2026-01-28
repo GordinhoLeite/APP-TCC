@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "504282890408",
+    "firebase_url": "https://trabalho-conclusao-de-cu-fbce7-default-rtdb.firebaseio.com",
+    "project_id": "trabalho-conclusao-de-cu-fbce7",
+    "storage_bucket": "trabalho-conclusao-de-cu-fbce7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:504282890408:android:a8bbe0a22522c4e9f5c29d",
+        "android_client_info": {
+          "package_name": "com.lucca03.tcc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "504282890408-7gqmvaaop2065vsn33p209auqlsl6531.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lucca03.tcc",
+            "certificate_hash": "ce2619e1281ae925a2d5c98feb7adca68372aa55"
+          }
+        },
+        {
+          "client_id": "504282890408-b8ug1uekta0ued866for42jb0jol0db0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9mvvsJA7szeBQkBFWoVNRdBf-_O3tNW0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "504282890408-b8ug1uekta0ued866for42jb0jol0db0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
