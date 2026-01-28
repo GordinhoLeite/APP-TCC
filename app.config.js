@@ -1,13 +1,13 @@
 export default {
   expo: {
     name: "TCC Lucca",
-    slug: "TCC Lucca",
+    slug: "h2ocontrol",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/images/Imagem de inicializacao quadrada.png",
     scheme: "myapp",
     userInterfaceStyle: "automatic",
-    newArchEnabled: true,
+    newArchEnabled: false,
     ios: {
       supportsTablet: true
     },
