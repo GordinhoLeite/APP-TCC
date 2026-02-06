@@ -7,7 +7,7 @@ export default {
     icon: "./assets/images/Imagem de inicializacao quadrada.png",
     scheme: "myapp",
     userInterfaceStyle: "automatic",
-    newArchEnabled: false,
+    newArchEnabled: true,
     ios: {
       supportsTablet: true
     },
