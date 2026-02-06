@@ -29,7 +29,6 @@ export default {
       favicon: "./assets/images/favicon.png"
     },
     plugins: [
-      
       "expo-router",
       '@react-native-google-signin/google-signin',
       [
@@ -48,8 +47,8 @@ export default {
         }
       ],
       "expo-font",
-      "expo-asset",
-      "expo-barcode-scanner"
+      "expo-asset"
+      // REMOVIDO: "expo-barcode-scanner" estava aqui causando o erro
     ],
     experiments: {
       typedRoutes: true
@@ -59,9 +58,8 @@ export default {
         origin: false
       },
       eas: {
-      projectId: "dedc3356-54d9-4873-96f5-0e77cfc12b02"
-    }
+        projectId: "dedc3356-54d9-4873-96f5-0e77cfc12b02"
+      }
     },
-   
   }
 };
