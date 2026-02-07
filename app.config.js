@@ -20,7 +20,7 @@ export default {
       },
       permissions: [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO"//
       ]
     },
     web: {
