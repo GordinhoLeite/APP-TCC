@@ -4,7 +4,7 @@ export default {
     slug: "h2ocontrol",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/Imagem de inicializacao quadrada.png",
+    icon: "./assets/images/icon_tcc.png",
     scheme: "myapp",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
@@ -15,7 +15,7 @@ export default {
       package: "com.lucca03.tcc", // certifique-se de que este é o mesmo do Firebase
       googleServicesFile: "./google-services.json", // <- Essencial para notificações push
       adaptiveIcon: {
-        foregroundImage: "./assets/images/icone-carregamento.png",
+        foregroundImage: "./assets/images/icon_tcc.png",
         backgroundColor: "#000000"
       },
       permissions: [
@@ -34,7 +34,7 @@ export default {
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/Imagem de inicialização app TCC.png",
+          image: "./assets/images/splash_tcc.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff"
@@ -48,7 +48,7 @@ export default {
       ],
       "expo-font",
       "expo-asset"
-      // REMOVIDO: "expo-barcode-scanner" estava aqui causando o erro
+      
     ],
     experiments: {
       typedRoutes: true
